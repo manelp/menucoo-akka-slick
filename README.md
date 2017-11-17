@@ -1,0 +1,1 @@
+# menucoo-akka-slick
