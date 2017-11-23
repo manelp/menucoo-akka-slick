@@ -1,17 +1,16 @@
 package com.perezbondia.menucoo
 
-import akka.actor.{ ActorRef, ActorSystem, Props }
+import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.{Config, ConfigFactory}
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 
 import scala.concurrent.duration._
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.io.StdIn
+import scala.concurrent.{ExecutionContext, Future}
 
 class Context extends DishesRoutes {
 
@@ -45,15 +44,6 @@ class Context extends DishesRoutes {
     val serverBindingFuture: Future[ServerBinding] = Http().bindAndHandle(dishesRoutes, interface, port)
 
     println(s"Server online at http://$interface:$port/\nPress RETURN to stop...")
-
-    StdIn.readLine()
-    serverBindingFuture
-      .flatMap(_.unbind())
-      .onComplete { done =>
-        done.failed.map { ex => log.error(ex, "Failed unbinding") }
-        system.terminate()
-        dbConfig.db.close()
-      }
   }
 
 }

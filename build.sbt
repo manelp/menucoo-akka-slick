@@ -16,6 +16,8 @@ lazy val forkliftVersion = "0.3.1"
 
 enablePlugins(JavaAppPackaging)
 
+enablePlugins(DockerPlugin)
+
 // -- mappings for the database migrations --
 mappings in Universal ++= contentOf(baseDirectory.value / "migrations").map {
   case (file, dest) => file -> s"db/migrations/$dest"
