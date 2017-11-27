@@ -51,7 +51,7 @@ lazy val slickDependencies = List(
 lazy val dbDependencies = List(
   "org.flywaydb" % "flyway-core" % "4.2.0",
   "com.typesafe.slick" %% "slick-hikaricp" % slickV,
-  "com.h2database" % "h2" % "1.4.192"
+  "org.postgresql" % "postgresql" % "42.1.4"
 )
 
 lazy val testDependencies = List(

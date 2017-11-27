@@ -6,8 +6,8 @@ import akka.http.scaladsl.Http.ServerBinding
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
+import com.zaxxer.hikari.HikariDataSource
 import org.flywaydb.core.Flyway
-import org.h2.jdbcx.JdbcDataSource
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 
@@ -44,12 +44,13 @@ class Context extends DishesRoutes {
 
   val migrations = {
     val flyway = new Flyway()
-    val dataSource = new JdbcDataSource()
-    dataSource.setURL(dbConfig.config.getString("db.url"))
+    val dataSource = new HikariDataSource()
+    dataSource.setJdbcUrl(dbConfig.config.getString("db.url"))
+    dataSource.setUsername(dbConfig.config.getString("db.user"))
+    dataSource.setPassword(dbConfig.config.getString("db.password"))
     flyway.setDataSource(dataSource)
     flyway
   }
-
 
   def start(dockerized: Boolean = true): Unit = {
     val serverBindingFuture: Future[ServerBinding] = Http().bindAndHandle(dishesRoutes, interface, port)
