@@ -1,16 +1,17 @@
 package com.perezbondia.menucoo.it
 
 //#test-top
+import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.util.Timeout
-import com.perezbondia.menucoo.{Context, DishesRoutes, DishesService}
+import com.perezbondia.menucoo.{Context, Dish, DishesRoutes, DishesService}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
 //#set-up
 class DishesRoutesSpec extends WordSpec with Matchers with ScalaFutures with ScalatestRouteTest
-    with DishesRoutes {
+  with DishesRoutes {
   //#test-top
 
   // Here we need to implement all the abstract members of UserRoutes.
@@ -20,6 +21,9 @@ class DishesRoutesSpec extends WordSpec with Matchers with ScalaFutures with Sca
 
   lazy val ctx = new Context()
 
+  ctx.migrations.clean()
+  ctx.migrations.migrate()
+
   override def dishesService: DishesService = ctx.dishesService
 
   override implicit val timeout: Timeout = ctx.timeout
@@ -28,7 +32,7 @@ class DishesRoutesSpec extends WordSpec with Matchers with ScalaFutures with Sca
 
   //#actual-test
   "DishesRoutes" should {
-    "return no users if no present (GET /dishes)" in {
+    "return no dishes if no present (GET /dishes)" in {
       // note that there's no need for the host part in the uri:
       val request = HttpRequest(uri = "/dishes")
 
@@ -45,42 +49,42 @@ class DishesRoutesSpec extends WordSpec with Matchers with ScalaFutures with Sca
     //#actual-test
 
     //#testing-post
-//    "be able to add users (POST /users)" in {
-//      import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
-//      import io.circe.generic.auto._
-//
-//      val user = User("Kapi", 42, "jp")
-//      val userEntity = Marshal(user).to[MessageEntity].futureValue // futureValue is from ScalaFutures
-//
-//      // using the RequestBuilding DSL:
-//      val request = Post("/users").withEntity(userEntity)
-//
-//      request ~> routes ~> check {
-//        status should ===(StatusCodes.Created)
-//
-//        // we expect the response to be json:
-//        contentType should ===(ContentTypes.`application/json`)
-//
-//        // and we know what message we're expecting back:
-//        entityAs[ActionPerformed] should ===(ActionPerformed("User Kapi created."))
-//      }
-//    }
-//    //#testing-post
-//
-//    "be able to remove users (DELETE /users)" in {
-//      // user the RequestBuilding DSL provided by ScalatestRouteSpec:
-//      val request = Delete(uri = "/users/Kapi")
-//
-//      request ~> routes ~> check {
-//        status should ===(StatusCodes.OK)
-//
-//        // we expect the response to be json:
-//        contentType should ===(ContentTypes.`application/json`)
-//
-//        // and no entries should be in the list:
-//        entityAs[String] should ===("""{"description":"User Kapi deleted."}""")
-//      }
-//    }
+    "be able to add users (POST /dishes)" in {
+      import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
+      import io.circe.generic.auto._
+
+      val dish = Dish(None, "jp")
+      val userEntity = Marshal(dish).to[MessageEntity].futureValue // futureValue is from ScalaFutures
+
+      // using the RequestBuilding DSL:
+      val request = Post("/dishes").withEntity(userEntity)
+
+      request ~> routes ~> check {
+        status should ===(StatusCodes.Created)
+
+        // we expect the response to be json:
+        contentType should ===(ContentTypes.`application/json`)
+
+        // and we know what message we're expecting back:
+        entityAs[Dish] should ===(Dish(Some(1), "jp"))
+      }
+    }
+    //#testing-post
+
+    //    "be able to remove users (DELETE /users)" in {
+    //      // user the RequestBuilding DSL provided by ScalatestRouteSpec:
+    //      val request = Delete(uri = "/users/Kapi")
+    //
+    //      request ~> routes ~> check {
+    //        status should ===(StatusCodes.OK)
+    //
+    //        // we expect the response to be json:
+    //        contentType should ===(ContentTypes.`application/json`)
+    //
+    //        // and no entries should be in the list:
+    //        entityAs[String] should ===("""{"description":"User Kapi deleted."}""")
+    //      }
+    //    }
     //#actual-test
   }
   //#actual-test
@@ -88,4 +92,5 @@ class DishesRoutesSpec extends WordSpec with Matchers with ScalaFutures with Sca
   //#set-up
 
 }
+
 //#set-up

@@ -1,0 +1,1 @@
+create table "DISHES" ("id" serial not null primary key, "name" varchar not null);

@@ -16,7 +16,7 @@ class DishesService(dishesRepository: DishesRepository)(implicit ec: ExecutionCo
   }
 
   def newDish(simpleDish: SimpleDish): Future[Dish] = {
-    dishesRepository.newDish(simpleDish).map(id => Dish(Option(id), simpleDish.name))
+    dishesRepository.newDish(simpleDish)
   }
 }
 
