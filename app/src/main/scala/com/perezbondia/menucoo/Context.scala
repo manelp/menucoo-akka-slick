@@ -1,6 +1,7 @@
 package com.perezbondia.menucoo
 
 import akka.actor.ActorSystem
+import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.stream.ActorMaterializer
@@ -8,6 +9,7 @@ import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 import com.zaxxer.hikari.HikariDataSource
 import org.flywaydb.core.Flyway
+import org.postgresql.ds.PGSimpleDataSource
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 
@@ -42,11 +44,13 @@ class Context extends DishesRoutes {
 
   override def dishesService = new DishesService(dishesRepository)
 
+  lazy val log = Logging(system, classOf[Context])
+
   val migrations = {
     val flyway = new Flyway()
-    val dataSource = new HikariDataSource()
-    dataSource.setJdbcUrl(dbConfig.config.getString("db.url"))
-    dataSource.setUsername(dbConfig.config.getString("db.user"))
+    val dataSource = new PGSimpleDataSource()
+    dataSource.setUrl(dbConfig.config.getString("db.url"))
+    dataSource.setUser(dbConfig.config.getString("db.user"))
     dataSource.setPassword(dbConfig.config.getString("db.password"))
     flyway.setDataSource(dataSource)
     flyway
