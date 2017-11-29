@@ -1,22 +1,19 @@
-package com.perezbondia.menucoo
+package com.perezbondia.menucoo.dishes
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.common.{EntityStreamingSupport, JsonEntityStreamingSupport}
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{pathEnd, pathPrefix, _}
 import akka.http.scaladsl.server.Route
-import akka.util.Timeout
 
 trait DishesRoutes {
 
   implicit def system: ActorSystem
 
-  def dishesService: DishesService
+  val dishesService: DishesService
 
-  // Required by the `ask` (?) method below
-  implicit val timeout: Timeout
+  implicit val jsonStreamingSupport: JsonEntityStreamingSupport
 
-  implicit val jsonStreamingSupport: JsonEntityStreamingSupport = EntityStreamingSupport.json()
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import io.circe.generic.auto._
 
@@ -33,9 +30,7 @@ trait DishesRoutes {
               complete(StatusCodes.Created -> dish)
             }
           }
-        //#users-get-delete
       }
-      //#all-routes
     }
 
 }

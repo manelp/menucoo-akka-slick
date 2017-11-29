@@ -1,9 +1,9 @@
-package com.perezbondia.menucoo
+package com.perezbondia.menucoo.dishes
 
 import akka.NotUsed
 import akka.stream.scaladsl.Source
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 class DishesService(dishesRepository: DishesRepository)(implicit ec: ExecutionContext) {
 

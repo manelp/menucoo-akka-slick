@@ -40,6 +40,7 @@ lazy val akkaDependencies = List(
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
   "io.circe" %% "circe-core" % circeV,
+  "io.circe" %% "circe-java8" % circeV,
   "io.circe" %% "circe-generic" % circeV,
   "io.circe" %% "circe-parser" % circeV
 )
