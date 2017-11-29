@@ -4,19 +4,19 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
-import akka.http.scaladsl.common.{EntityStreamingSupport, JsonEntityStreamingSupport}
+import akka.http.scaladsl.common.{ EntityStreamingSupport, JsonEntityStreamingSupport }
 import akka.stream.ActorMaterializer
-import com.perezbondia.menucoo.dishes.{DishesRepository, DishesRoutes, DishesService}
-import com.typesafe.config.{Config, ConfigFactory}
+import com.perezbondia.menucoo.dishes.{ DishesRepository, DishesRoutes, DishesService }
+import com.typesafe.config.{ Config, ConfigFactory }
 import org.flywaydb.core.Flyway
 import org.postgresql.ds.PGSimpleDataSource
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.io.StdIn
 
-class Context extends DishesRoutes with MenucooRoutes {
+class Context extends DishesRoutes with MenucooRoutes with DatabaseUriConfig {
 
   lazy private val config: Config = ConfigFactory.load()
   // set up ActorSystem and other dependencies here
@@ -38,6 +38,7 @@ class Context extends DishesRoutes with MenucooRoutes {
 
   // Database
   lazy val dbConfig: DatabaseConfig[JdbcProfile] = DatabaseConfig.forConfig[JdbcProfile]("slick")
+  override val defaultDbUri = dbConfig.config.getString("db.properties.url")
 
   lazy val dishesRepository = new DishesRepository(dbConfig)
 
@@ -49,9 +50,9 @@ class Context extends DishesRoutes with MenucooRoutes {
   val migrations = {
     val flyway = new Flyway()
     val dataSource = new PGSimpleDataSource()
-    dataSource.setUrl(dbConfig.config.getString("db.url"))
-    dataSource.setUser(dbConfig.config.getString("db.user"))
-    dataSource.setPassword(dbConfig.config.getString("db.password"))
+    dataSource.setUrl(databaseConnectionUrl)
+    dataSource.setUser(databaseUsername)
+    dataSource.setPassword(databasePassword)
     flyway.setDataSource(dataSource)
     flyway
   }
@@ -74,5 +75,4 @@ class Context extends DishesRoutes with MenucooRoutes {
         }
     }
   }
-
 }

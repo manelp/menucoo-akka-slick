@@ -5,7 +5,7 @@ import akka.stream.scaladsl.Source
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait DishesSchema {
 

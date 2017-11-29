@@ -1,9 +1,9 @@
 package com.perezbondia.menucoo.dishes
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.common.{EntityStreamingSupport, JsonEntityStreamingSupport}
+import akka.http.scaladsl.common.{ EntityStreamingSupport, JsonEntityStreamingSupport }
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Directives.{pathEnd, pathPrefix, _}
+import akka.http.scaladsl.server.Directives.{ pathEnd, pathPrefix, _ }
 import akka.http.scaladsl.server.Route
 
 trait DishesRoutes {

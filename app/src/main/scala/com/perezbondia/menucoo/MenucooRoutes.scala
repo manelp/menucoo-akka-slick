@@ -1,7 +1,7 @@
 package com.perezbondia.menucoo
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.common.{EntityStreamingSupport, JsonEntityStreamingSupport}
+import akka.http.scaladsl.common.{ EntityStreamingSupport, JsonEntityStreamingSupport }
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 
