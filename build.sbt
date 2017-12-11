@@ -2,6 +2,8 @@ import com.typesafe.sbt.packager.archetypes.JavaAppPackaging
 
 name := "menucoo-akka"
 
+scalaVersion := "2.12.4"
+
 addCommandAlias("mgm", "migrations_manager/run")
 
 addCommandAlias("mg", "db/migration/run")
