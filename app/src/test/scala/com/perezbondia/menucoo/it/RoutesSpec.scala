@@ -3,20 +3,21 @@ package com.perezbondia.menucoo.it
 //#test-top
 
 import java.time.LocalDate
+import java.util.UUID
 
 import akka.http.scaladsl.common.{EntityStreamingSupport, JsonEntityStreamingSupport}
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.perezbondia.menucoo._
-import com.perezbondia.menucoo.calendar.{DayMenu, WeekMenu}
+import com.perezbondia.menucoo.calendar.{CalendarRoutes, CalendarService, DayMenu, WeekMenu}
 import com.perezbondia.menucoo.dishes.{Dish, DishesRoutes, DishesService}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
 //#set-up
 class RoutesSpec extends WordSpec with Matchers with ScalaFutures with ScalatestRouteTest
-  with DishesRoutes with MenucooRoutes {
+  with DishesRoutes with CalendarRoutes {
   //#test-top
 
   // Here we need to implement all the abstract members of UserRoutes.
@@ -30,7 +31,7 @@ class RoutesSpec extends WordSpec with Matchers with ScalaFutures with Scalatest
   ctx.migrations.migrate()
 
   override val dishesService: DishesService = ctx.dishesService
-  override val menucooService: MenucooService = new MenucooService()
+  override val calendarService: CalendarService = new CalendarService(ctx.calendarRepository)
 
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import io.circe.generic.auto._
@@ -53,7 +54,7 @@ class RoutesSpec extends WordSpec with Matchers with ScalaFutures with Scalatest
 
     "be able to add users (POST /dishes)" in {
 
-      val dish = Dish(None, "jp")
+      val dish = Dish(UUID.randomUUID(), "jp")
       val userEntity = Marshal(dish).to[MessageEntity].futureValue // futureValue is from ScalaFutures
 
       val request = Post("/dishes").withEntity(userEntity)
@@ -65,12 +66,12 @@ class RoutesSpec extends WordSpec with Matchers with ScalaFutures with Scalatest
         contentType should ===(ContentTypes.`application/json`)
 
         // and we know what message we're expecting back:
-        entityAs[Dish] should ===(Dish(Some(1), "jp"))
+        entityAs[Dish] should ===(dish.id, dish.name)
       }
     }
   }
 
-  "MenucooRoutes" should {
+  "CalenadrRoutes" should {
     "match week route (GET /weeks/yyyyWww)" in {
       import io.circe.java8.time._
 
@@ -81,7 +82,7 @@ class RoutesSpec extends WordSpec with Matchers with ScalaFutures with Scalatest
       val days = (0 to 6).map(n => startDay.plusDays(n)).map(d => DayMenu(d, Seq.empty, Seq.empty))
       val expectedResult = WeekMenu(testWeek, days)
 
-      request ~> menucooRoutes ~> check {
+      request ~> calendarRoutes ~> check {
         status should ===(StatusCodes.OK)
 
         // we expect the response to be json:

@@ -1,9 +1,11 @@
 package com.perezbondia.menucoo.dishes
 
+import java.util.UUID
+
 import akka.NotUsed
 import akka.stream.scaladsl.Source
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 class DishesService(dishesRepository: DishesRepository)(implicit ec: ExecutionContext) {
 
@@ -11,7 +13,7 @@ class DishesService(dishesRepository: DishesRepository)(implicit ec: ExecutionCo
     dishesRepository.getDishes
   }
 
-  def getDish(id: Int): Future[Option[Dish]] = {
+  def getDish(id: UUID): Future[Option[Dish]] = {
     dishesRepository.getDish(id)
   }
 

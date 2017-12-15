@@ -4,19 +4,20 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
-import akka.http.scaladsl.common.{ EntityStreamingSupport, JsonEntityStreamingSupport }
+import akka.http.scaladsl.common.{EntityStreamingSupport, JsonEntityStreamingSupport}
 import akka.stream.ActorMaterializer
-import com.perezbondia.menucoo.dishes.{ DishesRepository, DishesRoutes, DishesService }
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.perezbondia.menucoo.calendar.{CalendarRepository, CalendarRoutes, CalendarService}
+import com.perezbondia.menucoo.dishes.{DishesRepository, DishesRoutes, DishesService}
+import com.typesafe.config.{Config, ConfigFactory}
 import org.flywaydb.core.Flyway
 import org.postgresql.ds.PGSimpleDataSource
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 import scala.io.StdIn
 
-class Context extends DishesRoutes with MenucooRoutes with DatabaseUriConfig {
+class Context extends DishesRoutes with CalendarRoutes with DatabaseUriConfig {
 
   lazy private val config: Config = ConfigFactory.load()
   // set up ActorSystem and other dependencies here
@@ -41,9 +42,10 @@ class Context extends DishesRoutes with MenucooRoutes with DatabaseUriConfig {
   override val defaultDbUri = dbConfig.config.getString("db.properties.url")
 
   lazy val dishesRepository = new DishesRepository(dbConfig)
+  lazy val calendarRepository = new CalendarRepository(dbConfig)
 
   override val dishesService = new DishesService(dishesRepository)
-  override val menucooService = new MenucooService()
+  override val calendarService = new CalendarService(calendarRepository)
 
   lazy val log = Logging(system, classOf[Context])
 
@@ -60,7 +62,7 @@ class Context extends DishesRoutes with MenucooRoutes with DatabaseUriConfig {
   import akka.http.scaladsl.server.Directives._enhanceRouteWithConcatenation
 
   def start(dockerized: Boolean = true): Unit = {
-    val serverBindingFuture: Future[ServerBinding] = Http().bindAndHandle(dishesRoutes ~ menucooRoutes, interface, port)
+    val serverBindingFuture: Future[ServerBinding] = Http().bindAndHandle(dishesRoutes ~ calendarRoutes, interface, port)
 
     println(s"Server online at http://$interface:$port/")
 
@@ -74,5 +76,10 @@ class Context extends DishesRoutes with MenucooRoutes with DatabaseUriConfig {
           dbConfig.db.close()
         }
     }
+  }
+
+  def close()={
+    system.terminate()
+    dbConfig.db.close()
   }
 }

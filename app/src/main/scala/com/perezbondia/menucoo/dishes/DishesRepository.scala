@@ -1,11 +1,13 @@
 package com.perezbondia.menucoo.dishes
 
+import java.util.UUID
+
 import akka.NotUsed
 import akka.stream.scaladsl.Source
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 trait DishesSchema {
 
@@ -13,11 +15,11 @@ trait DishesSchema {
 
   import jdbcProfile.api._
 
-  class Dishes(tag: Tag) extends Table[Dish](tag, "DISHES") {
-    def id = column[Int]("id", O.PrimaryKey, O.AutoInc) // This is the primary key column
+  class Dishes(tag: Tag) extends Table[Dish](tag, "dishes") {
+    def id = column[UUID]("id", O.PrimaryKey) // This is the primary key column
     def name = column[String]("name")
     // Every table needs a * projection with the same type as the table's type parameter
-    def * = (id.?, name) <> (Dish.tupled, Dish.unapply)
+    def * = (id, name) <> ((Dish.apply _).tupled, Dish.unapply)
   }
   val dishes = TableQuery[Dishes]
 
@@ -32,12 +34,13 @@ class DishesRepository(dbConfig: DatabaseConfig[JdbcProfile])(implicit ec: Execu
     Source.fromPublisher(db.stream(dishes.result).mapResult(dr => Dish(dr.id, dr.name)))
   }
 
-  def getDish(id: Int): Future[Option[Dish]] = {
+  def getDish(id: UUID): Future[Option[Dish]] = {
     db.run(dishes.filter(_.id === id).result.headOption).map(_.map(dr => Dish(dr.id, dr.name)))
   }
 
   def newDish(nd: SimpleDish): Future[Dish] = {
-    val insertDish = (dishes returning dishes.map(_.id) into ((d, id) => d.copy(id = Some(id)))) += Dish(name = nd.name)
+    val dish = Dish(UUID.randomUUID(), nd.name)
+    val insertDish = (dishes returning dishes) += dish
     db.run(insertDish)
   }
 

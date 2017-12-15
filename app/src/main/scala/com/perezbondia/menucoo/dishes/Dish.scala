@@ -1,8 +1,13 @@
 package com.perezbondia.menucoo.dishes
 
+import java.util.UUID
+
 case class SimpleDish(name: String)
 
-case class Dish(id: Option[Int] = None, name: String) {
-  def withId(id: Int): Dish = this.copy(id = Some(id))
+case class Dish(id: UUID, name: String)
+
+object Dish {
+  type DishId = UUID
 }
+
 

@@ -21,3 +21,14 @@ object RunnerLocal extends App {
   start(dockerized = false)
 
 }
+
+object ResetMigrations extends App {
+  val ctx = new Context()
+
+  import ctx._
+
+  migrations.clean()
+  migrations.migrate()
+
+  ctx.close()
+}
