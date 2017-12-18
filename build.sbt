@@ -20,7 +20,7 @@ enablePlugins(JavaAppPackaging)
 enablePlugins(DockerPlugin)
 
 lazy val commonSettings = Seq(
-  version := "1.0",
+  version := "0.1.0",
   organization := "com.perezbondia",
   scalaVersion := "2.12.3",
   scalacOptions += "-deprecation",
