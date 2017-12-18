@@ -2,6 +2,7 @@ package com.perezbondia.menucoo.calendar
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.common.JsonEntityStreamingSupport
+import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 
@@ -18,7 +19,7 @@ trait CalendarRoutes {
 
   val calendarService: CalendarService
 
-  private val weekRg: Regex = "^(?:[0-9]{4})W(?:(?:0[1-9])|(?:[1-4][0-9])|(?:5[0123]))$".r
+  private val weekRg: Regex = "^(?:[0-9]{4})-W(?:(?:0[1-9])|(?:[1-4][0-9])|(?:5[0123]))$".r
 
   lazy val calendarRoutes: Route =
     pathPrefix("weeks" / weekRg) { (yearWeek) =>
@@ -36,7 +37,7 @@ trait CalendarRoutes {
           post {
             entity(as[DayMenuRequest]) { dayMenu =>
               val menu = calendarService.setDayMenu(yearWeek, day, dayMenu)
-              complete(menu)
+              complete(StatusCodes.Created -> menu)
             }
           }
         }

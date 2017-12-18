@@ -1,6 +1,6 @@
 package com.perezbondia.menucoo.calendar
 
-import java.time.LocalDate
+import scala.concurrent.Future
 
 class CalendarService(calendarRepository: CalendarRepository) {
 
@@ -8,13 +8,14 @@ class CalendarService(calendarRepository: CalendarRepository) {
     WeekMenu(yearWeek, Seq())
   }
 
-  def getDayMenu(yearWeek: String, day: Int): Option[DayMenu] = {
-    Some(DayMenu(LocalDate.now(), Seq.empty, Seq.empty))
+  def getDayMenu(yearWeek: String, day: Int): Future[DayMenu] = {
+    val ld = localDateFromWeekYear(yearWeek, day)
+    calendarRepository.getDayMenu(ld)
   }
 
-  def setDayMenu(yearWeek: String, day: Int, menu: DayMenuRequest): DayMenu = {
-    calendarRepository.setDayMenu(LocalDate.now, menu)
-    val dayMenu = DayMenu(LocalDate.now, Seq.empty, Seq.empty)
-    dayMenu
+  def setDayMenu(yearWeek: String, day: Int, menu: DayMenuRequest): Future[DayMenu] = {
+    val ld = localDateFromWeekYear(yearWeek, day)
+    calendarRepository.setDayMenu(ld, menu)
+    getDayMenu(yearWeek, day)
   }
 }

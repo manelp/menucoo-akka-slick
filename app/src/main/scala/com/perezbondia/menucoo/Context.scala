@@ -42,7 +42,7 @@ class Context extends DishesRoutes with CalendarRoutes with DatabaseUriConfig {
   override val defaultDbUri = dbConfig.config.getString("db.properties.url")
 
   lazy val dishesRepository = new DishesRepository(dbConfig)
-  lazy val calendarRepository = new CalendarRepository(dbConfig)
+  lazy val calendarRepository = new CalendarRepository(dbConfig, dishesRepository)
 
   override val dishesService = new DishesService(dishesRepository)
   override val calendarService = new CalendarService(calendarRepository)
