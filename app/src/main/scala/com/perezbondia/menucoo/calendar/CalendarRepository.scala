@@ -71,14 +71,21 @@ class CalendarRepository(dbConfig: DatabaseConfig[JdbcProfile], dishesRepository
   implicit val system: ActorSystem = ActorSystem("menucooAkka")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
+  private def dishesMap = {
+    dishesRepository.getDishes.map(d => (d.id, d)).toMat(Sink.seq)(Keep.right).run().map(_.toMap)
+  }
+
   def getDayMenu(day: LocalDate): Future[DayMenu] = {
-    val dishes = dishesRepository.getDishes.map(d=> (d.id, d)).toMat(Sink.seq)(Keep.right).run().map(_.toMap)
-    dishes.flatMap(dss =>
-      db.run(dayMenus.filter(_.day === day).result).map(d => d.groupBy(_.menuType))
-        .map(dr => DayMenu(day,
-          dr.getOrElse(MenuType.lunch, Seq.empty).map(d => dss(d.dishId)),
-          dr.getOrElse(MenuType.dinner, Seq.empty).map(d => dss(d.dishId))))
-    )
+    dishesMap.flatMap { dss =>
+      db.run(dayMenus.filter(_.day === day).result).map(dr => dr.groupBy(_.menuType))
+        .map(dmRowToDayMenu(day, dss, _))
+    }
+  }
+
+  private def dmRowToDayMenu(day: LocalDate, dss: Map[DishId, Dish], dayMenuRows: Map[MenuType.Value, Seq[DayMenuRow]]) = {
+    DayMenu(day,
+      dayMenuRows.getOrElse(MenuType.lunch, Seq.empty).map(d => dss(d.dishId)),
+      dayMenuRows.getOrElse(MenuType.dinner, Seq.empty).map(d => dss(d.dishId)))
   }
 
   def setDayMenu(day: LocalDate, dm: DayMenuRequest): Unit = {
@@ -87,5 +94,13 @@ class CalendarRepository(dbConfig: DatabaseConfig[JdbcProfile], dishesRepository
       (dayMenus returning dayMenus) += r
     )
     (cleanDay +: insert).foreach(i => db.run(i))
+  }
+
+  def getWeekMenu(startingDay: LocalDate): Future[Seq[DayMenu]] = {
+    dishesMap.flatMap { dss =>
+      val x = db.run(dayMenus.filter(dm => dm.day.between(startingDay, startingDay.plusDays(6))).sortBy(_.day).result)
+        .map(row => row.groupBy(_.day).toSeq.map { case (d, drows) => d -> drows.groupBy(_.menuType) })
+      x.map(drows => drows.map { case (day, drow) => dmRowToDayMenu(day, dss, drow) }).map(_.sortWith((d1, d2) => d1.day.isBefore(d2.day)))
+    }
   }
 }

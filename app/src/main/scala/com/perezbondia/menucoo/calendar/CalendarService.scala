@@ -4,8 +4,9 @@ import scala.concurrent.Future
 
 class CalendarService(calendarRepository: CalendarRepository) {
 
-  def getWeekMenu(yearWeek: String): WeekMenu = {
-    WeekMenu(yearWeek, Seq())
+  def getWeekMenu(yearWeek: String): Future[Seq[DayMenu]] = {
+    val startingDay = localDateFromWeekYear(yearWeek, 1)
+    calendarRepository.getWeekMenu(startingDay)
   }
 
   def getDayMenu(yearWeek: String, day: Int): Future[DayMenu] = {
