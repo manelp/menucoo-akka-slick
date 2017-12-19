@@ -1,22 +1,29 @@
 package com.perezbondia.menucoo.calendar
 
-import scala.concurrent.Future
+import java.time.LocalDate
+
+import akka.actor.ActorSystem
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class CalendarService(calendarRepository: CalendarRepository) {
 
-  def getWeekMenu(yearWeek: String): Future[Seq[DayMenu]] = {
+  implicit val system: ActorSystem = ActorSystem("menucooAkka")
+  implicit val executionContext: ExecutionContext = system.dispatcher
+
+  def getWeekMenu(yearWeek: String): Future[WeekMenu] = {
     val startingDay = localDateFromWeekYear(yearWeek, 1)
-    calendarRepository.getWeekMenu(startingDay)
+    calendarRepository.getWeekMenu(startingDay).map(menus =>
+      WeekMenu(yearWeek, menus)
+    )
   }
 
-  def getDayMenu(yearWeek: String, day: Int): Future[DayMenu] = {
-    val ld = localDateFromWeekYear(yearWeek, day)
-    calendarRepository.getDayMenu(ld)
+  def getDayMenu(day: LocalDate): Future[DayMenu] = {
+    calendarRepository.getDayMenu(day)
   }
 
-  def setDayMenu(yearWeek: String, day: Int, menu: DayMenuRequest): Future[DayMenu] = {
-    val ld = localDateFromWeekYear(yearWeek, day)
-    calendarRepository.setDayMenu(ld, menu)
-    getDayMenu(yearWeek, day)
+  def setDayMenu(day: LocalDate, menu: DayMenuRequest): Future[DayMenu] = {
+    calendarRepository.setDayMenu(day, menu)
+    getDayMenu(day)
   }
 }
